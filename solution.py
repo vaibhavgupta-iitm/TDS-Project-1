@@ -5,9 +5,17 @@ from scipy.stats import pearsonr, linregress
 users_df = pd.read_csv('users.csv')
 repos_df = pd.read_csv('repositories.csv')
 
+# preprocessing
+
+users_df['company'] = users_df['company'].str.strip().str.lstrip('@').str.upper()
+users_df.fillna('', inplace=True)
+repos_df.fillna('', inplace=True)
+
+
 # Question 1
 top_5_followers = users_df.nlargest(5, 'followers')['login'].tolist()
 print("Users:", ", ".join(top_5_followers))
+
 
 # Question 2
 earliest_5_users = users_df.sort_values(by='created_at').head(5)['login'].tolist()

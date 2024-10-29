@@ -2,6 +2,7 @@ import requests
 import csv
 import os
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -9,6 +10,7 @@ HEADERS = {'Authorization': f'token {os.getenv("GITHUB_TOKEN")}'}
 USER_SEARCH_URL = 'https://api.github.com/search/users'
 USER_DETAILS_URL = 'https://api.github.com/users/{username}'
 REPOS_URL = 'https://api.github.com/users/{username}/repos'
+
 
 
 def fetch_users_in_beijing(page=1, per_page=100):
@@ -61,13 +63,15 @@ def fetch_user_repositories(username, per_page=100):
     repos = []
     page = 1
     try:
-        while True:
+        while True and len(repos) <=500:
             response = requests.get(f"{REPOS_URL.format(username=username)}?per_page={per_page}&page={page}", headers=HEADERS)
             response.raise_for_status()
             data = response.json()
             repos.extend(data)
-            if len(data) < per_page:  # Last page
+            if len(data) < per_page:  
                 break
+            time.sleep(1)
+
             page += 1
     except requests.exceptions.RequestException as e:
         print(f"Error fetching repositories for {username}: {e}")
@@ -103,8 +107,13 @@ def main():
             break
         all_users.extend(users)
         page += 1
-    # save_users_csv(all_users)
+        time.sleep(1)
+    print("all user fetched")
+    save_users_csv(all_users)
+    print("all user saved to user csv")
     save_repositories_csv(all_users)
+    print("All repo saved to repo csv")
+    print("Finished")
 
 if __name__ == "__main__":
     main()
